@@ -1,4 +1,8 @@
 ENV["RAILS_ENV"] = "test"
+
+require 'webmock'          # Allow connections to elasticsearch
+WebMock.disable_net_connect!(:allow => 'http://localhost:9200')
+
 require File.expand_path('../../config/environment', __FILE__)
 require 'rails/test_help'
 
