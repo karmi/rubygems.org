@@ -19,6 +19,8 @@ class Rubygem < ActiveRecord::Base
   after_touch  :update_elasticsearch_index
 
   tire do
+    index_prefix Rails.env
+
     mapping do
       indexes :name
       indexes :indexed, :type => 'boolean'

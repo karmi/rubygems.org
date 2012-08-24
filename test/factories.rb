@@ -64,6 +64,7 @@ FactoryGirl.define do
 
     after(:create) do |this|
       this.touch
+      Rubygem.tire.index.refresh
     end
 
     factory :rubygem_with_downloads do
@@ -88,6 +89,7 @@ FactoryGirl.define do
 
     after(:create) do |this|
       this.rubygem.touch
+      Rubygem.tire.index.refresh
     end
   end
 
