@@ -62,6 +62,10 @@ FactoryGirl.define do
     linkset
     name
 
+    after(:create) do |this|
+      this.touch
+    end
+
     factory :rubygem_with_downloads do
       after(:create) do |r|
         $redis[Download.key(r)] = r['downloads']
@@ -81,6 +85,10 @@ FactoryGirl.define do
     number
     platform "ruby"
     rubygem
+
+    after(:create) do |this|
+      this.rubygem.touch
+    end
   end
 
   sequence :url do |n|
