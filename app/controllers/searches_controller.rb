@@ -7,7 +7,10 @@ class SearchesController < ApplicationController
                                   :load     => {:include => 'versions'} do |search|
         search.query  { |q| q.text 'name', params[:query], :type => 'phrase_prefix', :operator => 'and' }
         search.filter :term, :indexed => true
-        search.sort   { by :downloads, 'desc' }
+        search.sort   do
+          by 'downloads', :desc
+          by 'name.raw',  :asc
+        end
 
         STDOUT.puts search.to_curl if Rails.env.development?
       end

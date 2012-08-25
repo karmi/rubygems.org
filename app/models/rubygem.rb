@@ -32,7 +32,11 @@ class Rubygem < ActiveRecord::Base
                }
              } do
       mapping do
-        indexes :name,      :analyzer => 'rubygem'
+        indexes :name,      :type => 'multi_field',
+                            :fields => {
+                              :name => { :type => 'string', :analyzer => 'rubygem' },
+                              :raw  => { :type => 'string', :index    => 'not_analyzed' }
+                            }
         indexes :indexed,   :type => 'boolean'
         indexes :downloads, :type => 'integer'
       end
