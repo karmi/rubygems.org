@@ -53,4 +53,15 @@ class SearchesControllerTest < ActionController::TestCase
       assert ! page.has_selector?("a[href='#{rubygem_path(@brando)}']")
     end
   end
+
+  context 'on GET to show with bad search query' do
+    setup { get :show, :query => 'bang!' }
+
+    should respond_with :internal_server_error
+    should render_template :show
+    should set_the_flash.now[:failure].to /query is incorrect/
+    should "see no results" do
+      assert ! page.has_content?("Results")
+    end
+  end
 end
