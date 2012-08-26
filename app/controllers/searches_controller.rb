@@ -1,11 +1,16 @@
 class SearchesController < ApplicationController
 
   def show
-    if params[:query]
+    if params[:query].present?
       @gems = Rubygem.tire.search :page     => params[:page],
                                   :per_page => Rubygem.per_page,
                                   :load     => {:include => 'versions'} do |search|
-        search.query  { |q| q.text 'name', params[:query], :type => 'phrase_prefix', :operator => 'and' }
+        search.query do |q|
+          q.boolean do |it|
+            it.should { |q| q.text   'name', params[:query], :type => 'phrase_prefix', :operator => 'and', :boost => 100 }
+            it.should { |q| q.string params[:query], :default_operator => 'and' }
+          end
+        end
         search.filter :term, :indexed => true
         search.sort   do
           by 'downloads', :desc
