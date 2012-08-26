@@ -34,11 +34,26 @@ class Rubygem < ActiveRecord::Base
       mapping do
         indexes :name,      :type => 'multi_field',
                             :fields => {
-                              :name => { :type => 'string', :analyzer => 'rubygem' },
-                              :raw  => { :type => 'string', :index    => 'not_analyzed' }
+                              :name => { :type => 'string', :analyzer => 'rubygem',      :boost => 10.0 },
+                              :raw  => { :type => 'string', :index    => 'not_analyzed', :boost => 10.0 }
                             }
-        indexes :indexed,   :type => 'boolean'
-        indexes :downloads, :type => 'integer'
+        indexes :indexed,   :type => 'boolean', :include_in_all => false, :as => proc { versions.any?(&:indexed?) }
+        indexes :downloads, :type => 'integer', :include_in_all => false
+
+        indexes :summary,     :analyzer => 'english', :as => proc { versions.most_recent.try(:summary) }
+        indexes :description, :analyzer => 'english', :as => proc { versions.most_recent.try(:description) }
+        indexes :author,      :as => proc { versions.most_recent.try(:authors).try(:split, /\s*,\s*/) }
+
+        indexes :version,     :analyzer => 'keyword', :as => proc { versions.map(&:number) },
+                              :include_in_all => false
+
+        indexes :uses,        :as => proc { versions.most_recent.dependencies.map(&:name) if versions.most_recent },
+                              :include_in_all => false
+        indexes :depends,     :as => proc { versions.most_recent.dependencies.runtime.map(&:name) if versions.most_recent },
+                              :include_in_all => false
+
+        indexes :created_at,  :type => 'date', :include_in_all => false
+        indexes :updated_at,  :type => 'date', :include_in_all => false
       end
     end
   end
@@ -178,10 +193,6 @@ class Rubygem < ActiveRecord::Base
 
   def to_param
     name
-  end
-
-  def to_indexed_json
-    MultiJson.dump :name => name, :indexed => versions.any?(&:indexed?), :downloads => downloads
   end
 
   def with_downloads
