@@ -58,3 +58,24 @@ Given 'the following rubygems exist for "$email":' do |email, table|
     rubygem.ownerships.create :user => user
   end
 end
+
+Given /^gems with these properties exist:$/ do |table|
+  table.hashes.each do |row|
+    # p 'GOT TABLE ROW:', row, '-'*80
+    if row['downloads']
+      rubygem = FactoryGirl.create :rubygem_with_downloads, :name => row['name'], :downloads => row['downloads']
+    else
+      rubygem = FactoryGirl.create :rubygem, :name => row['name']
+    end
+
+    FactoryGirl.create(:version, :rubygem => rubygem) do |version|
+      version.number      = row['version']
+      version.authors     = row['authors'].split(/\s*,\s*/)
+      version.summary     = row['summary']
+      version.description = row['description']
+
+      version.save
+      # p "CREATED RUBYGEM:", version.rubygem, version, '-'*80
+    end
+  end
+end
