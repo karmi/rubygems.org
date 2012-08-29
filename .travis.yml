@@ -1,6 +1,7 @@
 branches:
   only:
     - master
+    - search-travis
 before_script: cp config/database.yml.example config/database.yml
 services:
   - elasticsearch
